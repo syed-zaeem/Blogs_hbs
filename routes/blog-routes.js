@@ -3,7 +3,7 @@
 const express = require('express')
 const router = express.Router()
 
-const controller = require('../controllers/BlogController')
+const controller = require('../controllers/blogController')
 const auth = require('../middlewares/auth')
 
 // route for creating the new post or new blog

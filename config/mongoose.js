@@ -20,6 +20,7 @@ exports.connect = async () => {
     })
   })
 
-  return mongoose.connect(CONNECTION_STRING, { useMongoClient: true })
+  // return mongoose.connect(CONNECTION_STRING, { useMongoClient: true })
+  return mongoose.connect(CONNECTION_STRING)
 }
 
