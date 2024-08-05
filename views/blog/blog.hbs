@@ -1,0 +1,170 @@
+<div class="container-fluid p-0">
+  <div class="row">
+    <div class="col-md-9">
+      <h2 class="blogHeading">
+        Blog
+      </h2>
+    </div>
+    <div class="col-md-3">
+      <div class="text-right forButtonGroup">
+        {{#if author}}
+        <button class="btn btn-primary" id="edit" onclick="edit()"><i class="far fa-edit"></i>&nbsp;Edit</button>
+        <button class="btn btn-danger" id="delete" data-author-id="{{blog.author._id}}" onclick="deleteBlog()"><i
+            class="far fa-trash-alt"></i>&nbsp;Delete</button>
+        <button class="btn btn-success d-none" id="confirm" onclick="confirmDelete()"><i
+            class="far fa-save"></i>&nbsp;Confirm</button>
+        <button class="btn btn-secondary d-none" id="canceldelete" onclick="cancelDelete()"><i
+            class="fas fa-ban"></i>&nbsp;Cancel</button>
+        <button class="btn btn-success d-none" id="save" data-id="{{blog._id}}" onclick="save()"><i
+            class="far fa-save"></i>&nbsp;Save</button>
+        <button class="btn btn-secondary d-none" id="cancel" onclick="cancel()"><i
+            class="fas fa-ban"></i>&nbsp;Cancel</button>
+        {{/if}}
+      </div>
+    </div>
+  </div>
+</div>
+<h6 id="title" class="blogTitle">Title: <em>{{blog.title}}</em></h6>
+<pre class="pre-scrollable blog" id="contentview">{{blog.content}}</pre>
+
+<form class="d-none" id="editform">
+  <div class="form-group">
+    <label class="forLabel">Title:</label>
+    <input type="text" id="tinput" class="input form-control" value="{{blog.title}}">
+  </div>
+  <div class="form-group">
+    <input type="checkbox" name="checkbox" class="checkbox" private="{{blog.private}}" id="checkbox">
+    <label for="checkbox">&nbsp;Private</label>
+  </div>
+  <div class="form-group">
+    <label class="forLabel">Description:</label>
+    <textarea class="form-control" id="textarea" name="textarea" rows="15" required="required"></textarea>
+  </div>
+</form>
+
+<style>
+  .blog {
+    min-height: 75vh;
+    padding: 10px 10px 10px 10px;
+    border: 1px dotted;
+    border-radius: 5px;
+  }
+
+  .blogHeading{
+    font-size: 40px;
+    margin: 20px 0px;
+  }
+
+  .forButtonGroup{
+    margin: 20px 0px
+  }
+
+  .blogTitle{
+    font-size: 20px;
+    margin-bottom: 20px;
+  }
+
+  .forLabel{
+    font-size: 20px;
+    font-weight: 600;
+    margin-top: 12px;
+  }
+</style>
+
+<script>
+  const deleteBtn = document.querySelector('#delete')
+  const editBtn = document.querySelector('#edit')
+  const saveBtn = document.querySelector('#save')
+  const cancelBtn = document.querySelector('#cancel')
+  const textArea = document.querySelector('#textarea')
+  const content = document.querySelector('#contentview')
+  const private = document.querySelector('#private')
+  const checkbox = document.querySelector('#checkbox')
+  const title = document.querySelector('#title')
+  const tInput = document.querySelector('#tinput')
+  const inputDiv = document.querySelector('#inputdiv')
+  const visible = [deleteBtn, editBtn, content, title]
+  const hidden = [saveBtn, cancelBtn, document.querySelector('#editform')]
+
+  textArea.value = content.textContent
+  const checked = checkbox.getAttribute('private')
+  checkbox.checked = checked === 'true' ? true : false
+
+
+  function edit() {
+    visible.forEach(elem => elem.classList.add('d-none'))
+    hidden.forEach(elem => elem.classList.remove('d-none'))
+    textArea.focus()
+  }
+
+  function deleteBlog() {
+    deleteBtn.classList.add('d-none')
+    editBtn.classList.add('d-none')
+    document.querySelector('#confirm').classList.remove('d-none')
+    document.querySelector('#canceldelete').classList.remove('d-none')
+  }
+
+  function cancelDelete() {
+    document.querySelector('#confirm').classList.add('d-none')
+    document.querySelector('#canceldelete').classList.add('d-none')
+    deleteBtn.classList.remove('d-none')
+    editBtn.classList.remove('d-none')
+  }
+
+  function confirmDelete() {
+    const id = saveBtn.getAttribute('data-id')
+    const author = deleteBtn.getAttribute('data-author-id')
+    fetch('../../api/deleteBlog', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        id: id
+      })
+    })
+      .then(res => {
+        if (res.ok) {
+          location.href = './author/' + author
+        } else {
+          console.log(res.status)
+        }
+
+      })
+      .catch(err => console.log(err))
+  }
+
+  function save() {
+    const id = saveBtn.getAttribute('data-id')
+    const newContent = textArea.value
+    const newPrivate = checkbox.checked
+    const newTitle = tInput.value
+    console.log(newContent)
+    fetch('../../api/updateBlog', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        id: id,
+        content: newContent,
+        private: newPrivate,
+        title: newTitle
+      })
+    })
+      .then(res => {
+        if (res.ok) {
+          location.reload(true)
+        } else {
+          console.log(res.status)
+        }
+
+      })
+      .catch(err => console.log(err))
+  }
+
+  function cancel() {
+    hidden.forEach(elem => elem.classList.add('d-none'))
+    visible.forEach(elem => elem.classList.remove('d-none'))
+  }
+</script>

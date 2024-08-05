@@ -1,0 +1,191 @@
+<h2 class="blogsHeading">
+{{#if byAuthor}}
+    Blogs by {{byAuthor}}
+    </h2>
+{{else}}
+    Browse blogs
+    </h2>    
+{{/if}}
+{{#if blogs}}
+<div class="forSearchInput">
+  <div class="search-btn">
+    <form class="" >
+      <input class="form-control mr-sm-2" type="text" id="searchInput" placeholder="Search here" onkeyup="searchTable()">
+    </form>
+  </div>
+</div>
+
+<table class="table table-striped" id="blogsTable">
+    <thead class="thead-dark">
+        <tr>
+            <th class="text-center tableHeader">Title</th>
+            <th class="text-center tableHeader">Preview</th>
+            {{#if byAuthor}}
+            {{else}}
+            <th class="text-center tableHeader">Author</th>
+            {{/if}}
+            <th class="text-center tableHeader">Added</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{#each blogs}}
+        <tr id="{{_id}}">
+            {{#if byAuthor}}
+            <td onclick="byAuthorShowBlog()" onmouseover="mouseover()" onmouseout="mouseout()" style="cursor: pointer" class="highlight text-center">
+                {{title}}
+
+            </td>
+            {{else}}
+            <td onclick="showBlog()" onmouseover="mouseover()" onmouseout="mouseout()" style="cursor: pointer" class="highlight text-center">
+                {{title}}
+            </td>
+            {{/if}}
+            {{#if byAuthor}}
+            <td onclick="byAuthorShowBlog()" onmouseover="mouseover()" onmouseout="mouseout()" style="cursor: pointer" class="highlight text-center">
+                <div class="highlight code-content">{{content}}</div>
+            </td>
+            {{else}}
+            <td onclick="showBlog()" onmouseover="mouseover()" onmouseout="mouseout()" style="cursor: pointer" class="text-center">
+                <div class="highlight code-content">{{content}}</div>
+            </td>
+            {{/if}}
+            
+            {{#if byAuthor}}
+            {{else}}
+            <td class="text-center">                            
+                <a href="./blogs/by/{{author.username}}">{{author.username}}</a>                
+            </td>
+            {{/if}}
+            {{#if byAuthor}}
+            <td onclick="byAuthorShowBlog()" onmouseover="mouseover()" onmouseout="mouseout()" style="cursor: pointer" class="text-center">
+                {{createdAt}}
+            </td>
+            {{else}}
+            <td onclick="showBlog()" onmouseover="mouseover()" onmouseout="mouseout()" style="cursor: pointer" class="text-center">
+                {{createdAt}}
+            </td>
+            {{/if}}
+        </tr>
+        {{/each}}
+    </tbody>
+</table>
+{{else}}
+<p>There are currently no publicly listed blogs. Why not <a href="blogs/create">create</a> one?</p>
+{{/if}}
+<style>
+     .clickable {
+        color: #777;
+        text-decoration: underline;
+    }   
+    .parent-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.search-btn {
+    margin-top: 26px;
+    margin-bottom: 26px;
+}
+
+.blogsHeading{
+    text-align: center;
+    margin: 20px 0px;
+}
+
+.forSearchInput{
+    width: 60%;
+    margin-top: 40px;
+}
+
+.tableHeader{
+        font-size: 18px;
+    }
+
+
+</style>
+
+<script>
+    document.querySelectorAll('.code-content').forEach(content => {
+        content.textContent = content.textContent.slice(0, 200) + '...'
+    })
+
+    function showBlog() {
+        const id = event.currentTarget.parentNode.id
+        window.location.href = './blogs/' + id
+    }
+
+    function byAuthorShowBlog() {
+        const id = event.currentTarget.parentNode.id
+        window.location.href = './../../blogs/' + id
+    }
+
+    function remove() {
+        event.stopPropagation()
+        event.currentTarget.classList.add('d-none')
+        event.currentTarget.nextElementSibling.classList.remove('d-none')
+    }
+
+    function confirmRemove() {
+        const tr = event.currentTarget.parentNode
+        fetch('../../api/deleteBlog', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                id: tr.id
+            })
+        })
+            .then(res => {
+                if (res.ok) {
+                    tr.remove()
+                } else {
+                    console.log(res.status)
+                }
+
+            })
+            .catch(err => console.log(err))
+    }
+
+    function mouseover() {
+        const elems = event.currentTarget.parentNode.getElementsByClassName('highlight')
+
+        for (var i = 0; i < elems.length; i++) {
+            elems[i].classList.add('clickable')
+        }
+    }
+
+    function mouseout() {
+        const elems = event.currentTarget.parentNode.getElementsByClassName('highlight')
+        for (var i = 0; i < elems.length; i++) {
+            elems[i].classList.remove('clickable')
+        }
+    }
+
+    function searchTable() {
+        const input = document.getElementById('searchInput').value.toLowerCase();
+        const table = document.getElementById('blogsTable');
+        const rows = table.getElementsByTagName('tr');
+
+        for (let i = 1; i < rows.length; i++) {
+            const cells = rows[i].getElementsByTagName('td');
+            let match = false;
+
+            for (let j = 0; j < cells.length; j++) {
+                if (cells[j]) {
+                    if (cells[j].innerText.toLowerCase().includes(input)) {
+                        match = true;
+                        break;
+                    }
+                }
+            }
+
+            if (match) {
+                rows[i].style.display = '';
+            } else {
+                rows[i].style.display = 'none';
+            }
+        }
+    }
+</script>

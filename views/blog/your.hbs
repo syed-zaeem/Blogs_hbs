@@ -1,0 +1,143 @@
+<h2 class="centeringHeading">
+    Your Blogs
+</h2>
+{{#if blogs}}
+<table class="table table-striped">
+    <thead class="thead-dark">
+        <tr>            
+            <th class="text-center tableHeader"></th>            
+            <th class="text-center tableHeader">Title</th>
+            <th class="text-center tableHeader">Preview</th>
+            <th class="text-center tableHeader">Added</th>
+            <th class="text-center tableHeader">Private</th>
+        </tr>
+    </thead>
+    <tbody>    
+    {{#each blogs}}
+    <tr id="{{_id}}">
+        <td class="remove text-center" onclick="remove()">
+            <i class="far fa-trash-alt"></i>
+        </td>
+        <td class="d-none confirm text-center" onclick="confirmRemove()">
+            <i class="fa fa-check"></i>
+        </td>
+        <td onclick="showBlog()" onmouseover="mouseover()" onmouseout="mouseout()" style="cursor: pointer" 
+            class="highlight text-center">
+            {{title}}
+        </td>
+        <td onclick="showBlog()" onmouseover="mouseover()" onmouseout="mouseout()" style="cursor: pointer">
+            <div class="highlight text-center code-content">{{content}}</div>
+        </td>
+        <td onclick="showBlog()" onmouseover="mouseover()" onmouseout="mouseout()" style="cursor: pointer"
+            class="highlight text-center">
+            {{createdAt}}
+        </td>
+        <td class="text-center">
+            {{#if private}}
+            <i class="far fa-check-circle true"></i>
+            {{else}}
+            <i class="far fa-times-circle false"></i>
+
+            {{/if}}
+        </td>
+    </tr>
+    {{/each}}    
+    </tbody>    
+</table>
+{{else}}
+<p>You need to <a href="../create">create</a> some blogs before viewing them here. </p>
+{{/if}}
+<style>
+    .clickable {
+        color: #777
+    }    
+    .remove {
+        color: cornflowerblue;
+        cursor: default
+    }
+    .remove:hover {
+        color: firebrick
+    }
+
+    .confirm:hover {
+        color: green
+    }
+    .true {
+        color:green
+    }
+    .false {
+        color:firebrick
+    }
+
+    .centeringHeading{
+        text-align: center;
+        margin: 20px 0px;
+    }
+
+    .forCenteringCell{
+        text-align: center
+    }
+
+    .tableHeader{
+        font-size: 18px;
+    }
+
+    svg {
+        pointer-events: none;
+    }
+</style>
+
+<script>
+    document.querySelectorAll('.code-content').forEach(content => {
+        content.textContent = content.textContent.slice(0,75) + '...'
+    })
+
+    function showBlog() {
+        const id = event.currentTarget.parentNode.id        
+        window.location.href = '../' + id
+    }
+
+    function remove() {
+        event.stopPropagation()
+        event.currentTarget.classList.add('d-none')        
+        event.currentTarget.nextElementSibling.classList.remove('d-none')
+    }
+
+    function confirmRemove() {         
+        const tr = event.currentTarget.parentNode        
+        fetch('../../api/deleteBlog', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                id: tr.id
+            })
+        })
+        .then(res => {            
+            if (res.ok) {
+                tr.remove()
+            } else {
+                console.log(res.status)
+            }
+
+        })
+        .catch(err => console.log(err))
+    }
+    
+    function mouseover() {                        
+        const elems = event.currentTarget.parentNode.getElementsByClassName('highlight')
+        
+        for (var i = 0; i < elems.length; i++) {                        
+            elems[i].classList.add('clickable')
+        }
+    }        
+        
+    function mouseout() {
+        const elems = event.currentTarget.parentNode.getElementsByClassName('highlight')
+        for (var i = 0; i < elems.length; i++) {            
+            elems[i].classList.remove('clickable')
+        }
+    }    
+    
+</script>
